@@ -5,52 +5,71 @@
 #                                                     +:+ +:+         +:+      #
 #    By: zadrien <zadrien@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2016/11/26 20:45:05 by zadrien           #+#    #+#              #
-#    Updated: 2017/08/28 15:43:27 by zadrien          ###   ########.fr        #
+#    Created: 2017/05/02 18:16:06 by zadrien           #+#    #+#              #
+#    Updated: 2017/11/06 12:33:31 by zadrien          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-.PHONY: make all clean fclean re
+.PHONY:			all clean fclean name re
 
-NAME = ft_ls
+CC=				gcc
 
-LIB = -L libft/ -lft
+NAME=			ft_ls
 
-LIBFT = libft/libft.a
+CFLAGS=			 -Wall -Werror -Wextra
 
-C_DIR = srcs/
+CPATH=			srcs/
 
-SRCS = main.c checking_arg.c	\
+OPATH=			obj/
 
-SRC = $(addprefix $(C_DIR), $(SRCS))
+HPATH=			include/ libft/
 
-OBJ = $(SRCS:.c=.o)
+INC=			$(addprefix -I , $(HPATH))
 
-INC = -I include -I libft/
+CFILES= 		main.c \
+				misc.c \
+				arg_handler/recup_arg.c	\
+				arg_handler/checking_arg.c	\
+				output_ls/print.c	\
+				output_ls/ft_chmod.c	\
+				output_ls/opt_l.c	\
+				listing_dir/list_dir.c	\
+				listing_dir/ft_timerev.c	\
+				listing_dir/sort_ascii.c	\
+				listing_dir/sort_time.c	\
+				listing_dir/recursive.c	\
 
-all : $(NAME)
+OFILES=			$(CFILES:.c=.o)
 
-$(NAME): $(OBJ) $(LIBFT)
-	@gcc -Wall -Wextra -Werror $^ -o $@ $(LIB)
+HFILES=			include/ft_ls.h	\
+				libft/libft.h	\
 
-$(LIBFT):
-	@make -C libft/
-	@echo "Compilation ft_ls: DONE"
+OBJ=			$(addprefix $(OPATH), $(OFILES))
 
-$(OBJ) : $(SRC)
-	@echo "Compilation ft_ls: In progress"
-	@gcc -c -Wall -Wextra -Werror $^ $(INC)
 
-clean :
-	@make clean -C libft/
-	@echo "Suppression Objet LIBFT : OK"
-	@rm -f $(OBJ)
-	@echo "Suppression Objet SRCS : OK"
+all: $(NAME)
 
-fclean : clean
-	@rm -f $(LIBFT)
-	@echo "Suppression libft.a : OK"
-	@rm -f $(NAME)
-	@echo "Suppression (executable) minishell : OK"
+$(NAME): $(OBJ)
+	make -C libft
+	$(CC) $(CFLAGS) $(OBJ) libft/libft.a -o $(NAME)
 
-re : fclean all
+$(OPATH)%.o: $(CPATH)%.c $(HFILES)
+	@mkdir -p $(OPATH)/arg_handler
+	@mkdir -p $(OPATH)/output_ls
+	@mkdir -p $(OPATH)/listing_dir
+	$(CC) $(CFLAGS)  $(INC) $< -c -o $@
+
+clean:
+	make -C libft clean
+	rm -rf $(OBJ)
+
+fclean: clean
+	make -C libft fclean
+	rm -rf $(NAME)
+	rm -rf $(OPATH)
+
+re: fclean all
+
+norme:
+	@norminette srcs/**/**.[ch]
+	@norminette libft/*.[ch]
